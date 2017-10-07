@@ -15,7 +15,7 @@ gc.enable()
 FLAGS=None;
 ENV_NAME = 'Reacher-v1'
 EPISODES = 100000
-local_step=100
+local_step=10
 
 def train():
   # parameter server and worker information
@@ -42,16 +42,16 @@ def train():
     device=tf.train.replica_device_setter(
           worker_device="/job:worker/task:%d" % FLAGS.task_index,
           cluster=cluster);
-    
+
     #tf.set_random_seed(1);
-    # env and model call
-    env = filter_env.makeFilteredEnv(gym.make(ENV_NAME))
-    agent = DDPG(env)
 
     # prepare session
     with tf.device(tf.train.replica_device_setter(
             worker_device="/job:worker/task:%d" % FLAGS.task_index,
             cluster=cluster)):
+      # env and model call
+      env = filter_env.makeFilteredEnv(gym.make(ENV_NAME))
+      agent = DDPG(env,device)
       global_step = tf.get_variable('global_step',[],initializer=tf.constant_initializer(0),trainable=False);
       global_step_ph=tf.placeholder(global_step.dtype,shape=global_step.get_shape());
       global_step_ops=global_step.assign(global_step_ph);
@@ -72,6 +72,7 @@ def train():
                                    init_op=init_op)
     
     with sv.managed_session(server.target) as sess:
+      agent.set_sess(sess);
       while True:
         if sess.run([global_step])[0] > EPISODES:
           break
@@ -87,7 +88,8 @@ def train():
             if done:
               break;
         sess.run(global_step_ops,{global_step_ph:sess.run([global_step])[0]+local_step});
-        print(str(FLAGS.task_index)+","+str(sess.run([global_step])[0])+","+str(score));
+        sess.run(score_ops,{score_ph:score/local_step});
+        print(str(FLAGS.task_index)+","+str(sess.run([global_step])[0])+","+str(score/local_step));
     sv.stop();
     print("Done");
 
@@ -116,7 +118,7 @@ if __name__ == '__main__':
   parser.add_argument(
       "--hostname",
       type=str,
-      default="seltera46",
+      default="jaesik-System-Product-Name",
       help="The Hostname of the machine"
   )
   parser.add_argument(

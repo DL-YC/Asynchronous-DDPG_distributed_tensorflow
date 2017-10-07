@@ -21,24 +21,27 @@ GAMMA = 0.99
 
 class DDPG:
     """docstring for DDPG"""
-    def __init__(self, env):
+    def __init__(self, env,device):
         self.name = 'DDPG' # name for uploading results
         self.environment = env
+        self.device=device
         # Randomly initialize actor network and critic network
         # with both their target networks
         self.state_dim = env.observation_space.shape[0]
         self.action_dim = env.action_space.shape[0]
-
-        self.sess = tf.InteractiveSession()
-
-        self.actor_network = ActorNetwork(self.sess,self.state_dim,self.action_dim)
-        self.critic_network = CriticNetwork(self.sess,self.state_dim,self.action_dim)
+        
+        self.actor_network = ActorNetwork(self.state_dim,self.action_dim)
+        self.critic_network = CriticNetwork(self.state_dim,self.action_dim)
         
         # initialize replay buffer
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
 
         # Initialize a random process the Ornstein-Uhlenbeck process for action exploration
         self.exploration_noise = OUNoise(self.action_dim)
+
+    def set_sess(self,sess):
+        self.actor_network.set_sess(sess);
+        self.critic_network.set_sess(sess);
 
     def train(self):
         #print "train step",self.time_step

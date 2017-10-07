@@ -13,9 +13,8 @@ BATCH_SIZE = 64
 
 class ActorNetwork:
 	"""docstring for ActorNetwork"""
-	def __init__(self,sess,state_dim,action_dim):
+	def __init__(self,state_dim,action_dim):
 
-		self.sess = sess
 		self.state_dim = state_dim
 		self.action_dim = action_dim
 		# create actor network
@@ -27,10 +26,12 @@ class ActorNetwork:
 		# define training rules
 		self.create_training_method()
 
-		self.sess.run(tf.initialize_all_variables())
-
-		self.update_target()
+		#self.update_target()
 		#self.load_network()
+
+        def set_sess(self,sess):
+                self.sess=sess;
+		self.update_target()
 
 	def create_training_method(self):
 		self.q_gradient_input = tf.placeholder("float",[None,self.action_dim])

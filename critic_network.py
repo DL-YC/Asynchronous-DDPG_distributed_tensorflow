@@ -12,9 +12,8 @@ L2 = 0.01
 
 class CriticNetwork:
 	"""docstring for CriticNetwork"""
-	def __init__(self,sess,state_dim,action_dim):
+	def __init__(self,state_dim,action_dim):
 		self.time_step = 0
-		self.sess = sess
 		# create q network
 		self.state_input,\
 		self.action_input,\
@@ -28,10 +27,11 @@ class CriticNetwork:
 		self.target_update = self.create_target_q_network(state_dim,action_dim,self.net)
 
 		self.create_training_method()
-
-		# initialization 
-		self.sess.run(tf.initialize_all_variables())
 			
+		#self.update_target()
+
+        def set_sess(self,sess):
+                self.sess=sess;
 		self.update_target()
 
 	def create_training_method(self):
