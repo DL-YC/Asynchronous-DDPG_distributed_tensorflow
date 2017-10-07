@@ -88,8 +88,8 @@ def train():
             if done:
               break;
         sess.run(global_step_ops,{global_step_ph:sess.run([global_step])[0]+local_step});
-        sess.run(score_ops,{score_ph:score/local_step});
-        print(str(FLAGS.task_index)+","+str(sess.run([global_step])[0])+","+str(score/local_step));
+        sess.run(score_ops,{score_ph:score/local_step/200});
+        print(str(FLAGS.task_index)+","+str(sess.run([global_step])[0])+","+str(score/local_step/200));
     sv.stop();
     print("Done");
 
